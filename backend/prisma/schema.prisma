@@ -1,0 +1,164 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+enum Role {
+  SUPER_ADMIN
+  STAFF
+  MEMBER
+}
+
+enum MemberStatus {
+  ACTIVE
+  FROZEN
+  CANCELLED
+  EXPIRED
+}
+
+enum PaymentStatus {
+  PAID
+  UNPAID
+  OVERDUE
+}
+
+model User {
+  id            String         @id @default(uuid()) @db.Uuid
+  email         String         @unique
+  passwordHash  String
+  name          String
+  phone         String?
+  role          Role           @default(MEMBER)
+  status        MemberStatus   @default(ACTIVE)
+  gymId         String         @db.Uuid
+  createdAt     DateTime       @default(now())
+  updatedAt     DateTime       @updatedAt
+
+  biometrics    BiometricCredential[]
+  subscriptions MemberSubscription[]
+  checkIns      CheckInLog[]           @relation("CheckInLogs")
+  verifiedLogs  CheckInLog[]           @relation("VerifiedLogs")
+  payments      Payment[]
+  sessions      WorkoutSession[]
+
+  @@index([email])
+  @@index([gymId])
+}
+
+model BiometricCredential {
+  id               String   @id @default(uuid()) @db.Uuid
+  userId           String   @db.Uuid
+  user             User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  type             String   // "FACE" or "FINGERPRINT"
+  templateVector   Float[]  // Cosine embedding for faces
+  fingerprintIndex Int?     // Index for ZKTeco local hardware registry
+  encryptedVector  String?  // Encrypted backup template
+  faceThumbnailUrl String?
+  createdAt        DateTime @default(now())
+
+  @@index([userId])
+}
+
+model MembershipPlan {
+  id                     String               @id @default(uuid()) @db.Uuid
+  gymId                  String               @db.Uuid
+  name                   String
+  durationDays           Int
+  price                  Decimal              @db.Decimal(10, 2)
+  freezeLimitDays        Int                  @default(30)
+  allowedEntryHoursStart String               @default("05:00:00")
+  allowedEntryHoursEnd   String               @default("23:00:00")
+  createdAt              DateTime             @default(now())
+  subscriptions          MemberSubscription[]
+}
+
+model MemberSubscription {
+  id          String         @id @default(uuid()) @db.Uuid
+  memberId    String         @db.Uuid
+  member      User           @relation(fields: [memberId], references: [id], onDelete: Cascade)
+  planId      String         @db.Uuid
+  plan        MembershipPlan @relation(fields: [planId], references: [id])
+  status      MemberStatus   @default(ACTIVE)
+  startDate   DateTime
+  endDate     DateTime
+  freezeStart DateTime?
+  freezeEnd   DateTime?
+  createdAt   DateTime       @default(now())
+  payments    Payment[]
+
+  @@index([memberId])
+}
+
+model CheckInLog {
+  id                 String    @id @default(uuid()) @db.Uuid
+  gymId              String    @db.Uuid
+  memberId           String?   @db.Uuid
+  member             User?     @relation("CheckInLogs", fields: [memberId], references: [id], onDelete: SetNull)
+  timestamp          DateTime  @default(now())
+  method             String    // "FACE", "FINGERPRINT", "QR", "MANUAL"
+  verifiedByStaffId  String?   @db.Uuid
+  verifiedByStaff    User?     @relation("VerifiedLogs", fields: [verifiedByStaffId], references: [id])
+  photoUrl           String?
+  success            Boolean   @default(true)
+  errorMessage       String?
+
+  @@index([gymId, timestamp(sort: Desc)])
+}
+
+model Payment {
+  id             String             @id @default(uuid()) @db.Uuid
+  subscriptionId String             @db.Uuid
+  subscription   MemberSubscription @relation(fields: [subscriptionId], references: [id], onDelete: Cascade)
+  memberId       String             @db.Uuid
+  member         User               @relation(fields: [memberId], references: [id])
+  amount         Decimal            @db.Decimal(10, 2)
+  status         PaymentStatus      @default(UNPAID)
+  paymentMethod  String?            // "CASH", "CARD", "ONLINE"
+  transactionId  String?
+  dueDate        DateTime
+  paidAt         DateTime?
+  createdAt      DateTime           @default(now())
+}
+
+model WorkoutSession {
+  id              String       @id @default(uuid()) @db.Uuid
+  memberId        String       @db.Uuid
+  member          User         @relation(fields: [memberId], references: [id], onDelete: Cascade)
+  date            DateTime
+  durationMinutes Int?
+  notes           String?
+  createdAt       DateTime     @default(now())
+  sets            WorkoutSet[]
+}
+
+model WorkoutSet {
+  id              String         @id @default(uuid()) @db.Uuid
+  sessionId       String         @db.Uuid
+  session         WorkoutSession @relation(fields: [sessionId], references: [id], onDelete: Cascade)
+  exerciseName    String
+  setNumber       Int
+  weight          Decimal        @db.Decimal(6, 2)
+  reps            Int
+  rir             Int?
+  postureScore    Int?           // 0-100 score from mobile TF Lite feedback
+  feedbackSummary String?
+}
+
+model MealLog {
+  id                String   @id @default(uuid()) @db.Uuid
+  memberId          String   @db.Uuid
+  timestamp         DateTime @default(now())
+  textDescription   String
+  photoUrl          String?
+  estimatedCalories Int?
+  estimatedProtein  Int?
+  estimatedCarbs     Int?
+  estimatedFat      Int?
+  loggedMethod      String   // "TEXT", "BARCODE", "PHOTO"
+}
