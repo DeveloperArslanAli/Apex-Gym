@@ -1,0 +1,47 @@
+{
+  "expo": {
+    "name": "APEX-Gym",
+    "slug": "antigravity-gym",
+    "version": "1.0.0",
+    "scheme": "antigravity",
+    "jsEngine": "hermes",
+    "orientation": "portrait",
+    "icon": "./assets/icon.png",
+    "userInterfaceStyle": "dark",
+    "splash": {
+      "image": "./assets/splash.png",
+      "resizeMode": "contain",
+      "backgroundColor": "#09090b"
+    },
+    "assetBundlePatterns": [
+      "**/*"
+    ],
+    "ios": {
+      "supportsTablet": true,
+      "infoPlist": {
+        "NSCameraUsageDescription": "Antigravity Gym requires access to your camera to run the MoveNet posture estimation model and provide real-time exercise feedback."
+      }
+    },
+    "android": {
+      "package": "com.apexgym.app",
+      "versionCode": 1,
+      "adaptiveIcon": {
+        "foregroundImage": "./assets/adaptive-icon.png",
+        "backgroundColor": "#09090b"
+      },
+      "permissions": [
+        "CAMERA",
+        "RECORD_AUDIO"
+      ]
+    },
+    "web": {
+      "favicon": "./assets/favicon.png"
+    },
+    "extra": {
+      "eas": {
+        "projectId": "ceb86b6c-6610-49c0-ba45-1228dc5e1059"
+      }
+    },
+    "owner": "arslan_016"
+  }
+}
