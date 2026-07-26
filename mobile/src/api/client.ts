@@ -1,7 +1,7 @@
 import axios from 'axios';
 
 // 10.0.2.2 points to host localhost in Android Emulator. Modify this for local wifi testing.
-export let API_BASE_URL = 'https://apex-gym-backend.loca.lt/api';
+export let API_BASE_URL = 'http://192.168.100.17:3001/api';
 
 export const apiClient = axios.create({
   baseURL: API_BASE_URL,
