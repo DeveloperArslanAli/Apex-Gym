@@ -1,7 +1,7 @@
 const { execSync } = require('child_process');
 const path = require('path');
 
-const url = "https://expo.dev/artifacts/eas/K6Hg_nvLjC6w9dSvqeq1K4f9qDoUaNwEh-VUSW6Jzis.apk";
+const url = "https://expo.dev/artifacts/eas/H_9ZWiu6l7hHHUiEFxu8F7KPj5_XtWIlOdC8sZ-Ztn8.apk";
 const dest = path.join(__dirname, 'APEX-Gym-Release.apk');
 
 console.log('Downloading APEX-Gym standalone APK from Expo dev servers...');
