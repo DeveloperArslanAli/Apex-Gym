@@ -1,7 +1,7 @@
 import axios from 'axios';
 
 // 10.0.2.2 points to host localhost in Android Emulator. Modify this for local wifi testing.
-export let API_BASE_URL = 'http://10.0.2.2:3001/api';
+export let API_BASE_URL = 'https://fair-papers-retire.loca.lt/api';
 
 export const apiClient = axios.create({
   baseURL: API_BASE_URL,
